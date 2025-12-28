@@ -1,5 +1,7 @@
 import { useState } from "react";
 import { login } from "../services/authService";
+import "../styles/login.css";
+
 
 function Login() {
   const [email, setEmail] = useState("");
@@ -10,25 +12,40 @@ function Login() {
 
   try {
     const response = await login(email, password);
-    alert(response.data);
+
+    // save user session
+    localStorage.setItem("user", JSON.stringify(response.data));
+
+    // redirect to dashboard
+    window.location.href = "/dashboard";
+
+    const workRes = await fetch(
+  `http://localhost:8080/work/start?email=${email}`,
+  { method: "POST" }
+);
+
+const workLog = await workRes.json();
+localStorage.setItem("workLogId", workLog.id);
+
   } catch (error) {
     alert("Login failed");
-    console.error(error);
   }
 };
 
-  return (
-    <div style={styles.container}>
-      <form style={styles.form} onSubmit={handleLogin}>
-        <h2>Office Work Portal</h2>
 
+  return (
+  <div className="login-container">
+    <div className="login-card">
+      <h1>Office Work Portal</h1>
+      <p>Login to continue</p>
+
+      <form onSubmit={handleLogin}>
         <input
           type="email"
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
           required
-          style={styles.input}
         />
 
         <input
@@ -37,45 +54,22 @@ function Login() {
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          style={styles.input}
         />
 
-        <button style={styles.button}>Login</button>
+        <button type="submit" className="login-btn">
+          Login
+        </button>
       </form>
+
+      <div className="footer-text">
+        © 2025 Office Portal
+      </div>
     </div>
-  );
+  </div>
+);
+
 }
 
-const styles = {
-  container: {
-  height: "100vh",
-  width: "100vw",
-  display: "flex",
-  justifyContent: "center",
-  alignItems: "center",
-  background: "#f1f5f9",
-},
 
-  form: {
-    width: "320px",
-    background: "#fff",
-    padding: "30px",
-    borderRadius: "8px",
-    boxShadow: "0 0 10px rgba(0,0,0,0.1)",
-  },
-  input: {
-    width: "100%",
-    padding: "10px",
-    marginBottom: "15px",
-  },
-  button: {
-    width: "100%",
-    padding: "10px",
-    background: "#2563eb",
-    color: "#fff",
-    border: "none",
-    cursor: "pointer",
-  },
-};
 
 export default Login;
